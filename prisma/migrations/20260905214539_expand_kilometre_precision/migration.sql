@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "entries" ALTER COLUMN "km" SET DATA TYPE DECIMAL(10,2);
