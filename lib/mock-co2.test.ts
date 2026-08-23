@@ -1,0 +1,25 @@
+import { describe, expect, it } from "vitest";
+import { estimateCo2SavedKg } from "./mock-co2";
+
+describe("estimateCo2SavedKg", () => {
+  it("returns 0 for walking and cycling (no marginal emission)", () => {
+    expect(estimateCo2SavedKg("marche", 10)).toBeGreaterThan(0);
+    expect(estimateCo2SavedKg("velo", 10)).toBeGreaterThan(0);
+  });
+
+  it("saves more with walking/cycling than with the bus", () => {
+    const walking = estimateCo2SavedKg("marche", 10);
+    const bus = estimateCo2SavedKg("bus", 10);
+    expect(walking).toBeGreaterThan(bus);
+  });
+
+  it("scales linearly with distance", () => {
+    const km10 = estimateCo2SavedKg("bus", 10);
+    const km20 = estimateCo2SavedKg("bus", 20);
+    expect(km20).toBeCloseTo(km10 * 2, 5);
+  });
+
+  it("never returns a negative value", () => {
+    expect(estimateCo2SavedKg("covoiturage", 1)).toBeGreaterThanOrEqual(0);
+  });
+});

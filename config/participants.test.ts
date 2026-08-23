@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { PARTICIPANTS } from "./config/participants";
+import { PARTICIPANTS } from "./participants";
 
 describe("participants config", () => {
   it("is a non-empty list of unique names", () => {
