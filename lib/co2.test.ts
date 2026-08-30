@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { estimateCo2SavedKg } from "./mock-co2";
+import { estimateCo2SavedKg } from "./co2";
 
 describe("estimateCo2SavedKg", () => {
   it("returns 0 for walking and cycling (no marginal emission)", () => {

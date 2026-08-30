@@ -9,6 +9,9 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      # Placeholder: prisma generate/build only need a syntactically valid URL, no live DB.
+      DATABASE_URL: "postgresql://mobility:mobility@localhost:5432/mobility_tracker?schema=public"
     steps:
       - uses: actions/checkout@v4
 
