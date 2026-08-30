@@ -1,17 +1,17 @@
 import type { ModeId } from "@/config/modes";
 
-// Estimation grossière pour le mock du kiosk (phase 1).
-// Remplacée en phase 2 par lib/co2.ts avec les facteurs ADEME/Base Empreinte sourcés.
+// Rough estimate for the kiosk mock (phase 1).
+// Replaced in phase 2 by lib/co2.ts with sourced ADEME/Base Empreinte factors.
 const CAR_SOLO_FACTOR_KG_PER_KM = 0.218;
 
 const MODE_FACTORS_KG_PER_KM: Record<ModeId, number> = {
-  velo: 0,
-  marche: 0,
-  vae: 0.003,
+  bike: 0,
+  walk: 0,
+  ebike: 0.003,
   bus: 0.103,
   train: 0.0242,
   tram: 0.0035,
-  covoiturage: 0.109,
+  carpool: 0.109,
 };
 
 export function estimateCo2SavedKg(mode: ModeId, km: number): number {

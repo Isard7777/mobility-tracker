@@ -1,11 +1,11 @@
 export const MODES = [
-  { id: "velo", label: "Vélo", emoji: "🚴" },
-  { id: "marche", label: "Marche", emoji: "🚶" },
+  { id: "bike", label: "Bike", emoji: "🚴" },
+  { id: "walk", label: "Walk", emoji: "🚶" },
   { id: "bus", label: "Bus", emoji: "🚌" },
   { id: "train", label: "Train", emoji: "🚆" },
   { id: "tram", label: "Tram", emoji: "🚊" },
-  { id: "vae", label: "Vélo électrique", emoji: "🔋" },
-  { id: "covoiturage", label: "Covoiturage", emoji: "🚗" },
+  { id: "ebike", label: "E-bike", emoji: "🔋" },
+  { id: "carpool", label: "Carpool", emoji: "🚗" },
 ] as const;
 
 export type ModeId = (typeof MODES)[number]["id"];

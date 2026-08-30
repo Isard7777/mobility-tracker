@@ -43,7 +43,7 @@ export function NumericKeypad({ value, onChange, onValidate, isValid }: NumericK
         onClick={onValidate}
         className="w-full max-w-xs rounded-2xl bg-emerald-600 py-4 text-2xl font-bold text-white shadow-lg transition disabled:cursor-not-allowed disabled:bg-neutral-700 disabled:text-neutral-500 active:scale-95"
       >
-        Valider
+        Confirm
       </button>
     </div>
   );

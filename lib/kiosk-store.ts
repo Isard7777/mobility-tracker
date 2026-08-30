@@ -1,9 +1,11 @@
 import type { ModeId } from "@/config/modes";
+import type { Participant } from "@/config/participants";
 import { estimateCo2SavedKg } from "./mock-co2";
 
 export type KioskEntry = {
   id: string;
-  name: string;
+  quadrigram: string;
+  displayName: string;
   mode: ModeId;
   km: number;
   co2SavedKg: number;
@@ -16,13 +18,14 @@ export type KioskTotals = {
   participantsCount: number;
 };
 
-// Store en mémoire pour le mock du kiosk (phase 1) — remplacé en phase 2 par Postgres/Prisma.
+// In-memory store for the kiosk mock (phase 1) — replaced in phase 2 by Postgres/Prisma.
 let entries: KioskEntry[] = [];
 
-export function addKioskEntry(name: string, mode: ModeId, km: number): KioskEntry {
+export function addKioskEntry(participant: Participant, mode: ModeId, km: number): KioskEntry {
   const entry: KioskEntry = {
     id: crypto.randomUUID(),
-    name,
+    quadrigram: participant.quadrigram,
+    displayName: participant.displayName,
     mode,
     km,
     co2SavedKg: estimateCo2SavedKg(mode, km),
@@ -35,7 +38,7 @@ export function addKioskEntry(name: string, mode: ModeId, km: number): KioskEntr
 export function getKioskTotals(): KioskTotals {
   const totalKm = entries.reduce((sum, e) => sum + e.km, 0);
   const totalCo2SavedKg = entries.reduce((sum, e) => sum + e.co2SavedKg, 0);
-  const participantsCount = new Set(entries.map((e) => e.name)).size;
+  const participantsCount = new Set(entries.map((e) => e.quadrigram)).size;
   return {
     totalKm: Number(totalKm.toFixed(2)),
     totalCo2SavedKg: Number(totalCo2SavedKg.toFixed(3)),

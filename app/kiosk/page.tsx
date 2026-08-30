@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { PARTICIPANTS } from "@/config/participants";
+import { PARTICIPANTS, type Participant } from "@/config/participants";
 import type { ModeId } from "@/config/modes";
-import { NameGrid } from "@/components/kiosk/NameGrid";
+import { ParticipantSearch } from "@/components/kiosk/ParticipantSearch";
 import { ModeSelector } from "@/components/kiosk/ModeSelector";
 import { NumericKeypad } from "@/components/kiosk/NumericKeypad";
 import { ConfirmationScreen } from "@/components/kiosk/ConfirmationScreen";
@@ -18,7 +18,7 @@ const MAX_KM = 200;
 
 export default function KioskPage() {
   const [step, setStep] = useState<Step>("name");
-  const [selectedName, setSelectedName] = useState<string | null>(null);
+  const [selectedParticipant, setSelectedParticipant] = useState<Participant | null>(null);
   const [selectedMode, setSelectedMode] = useState<ModeId | null>(null);
   const [kmInput, setKmInput] = useState("");
   const [lastEntryCo2, setLastEntryCo2] = useState(0);
@@ -28,12 +28,12 @@ export default function KioskPage() {
 
   function resetFlow() {
     setStep("name");
-    setSelectedName(null);
+    setSelectedParticipant(null);
     setSelectedMode(null);
     setKmInput("");
   }
 
-  // Reset le formulaire après 30s d'inactivité en cours de saisie (pas sur l'écran d'accueil).
+  // Resets the form after 30s of inactivity mid-entry (not on the idle name search screen).
   useEffect(() => {
     if (inactivityTimer.current) clearTimeout(inactivityTimer.current);
     if (step === "name") return;
@@ -42,7 +42,7 @@ export default function KioskPage() {
     return () => {
       if (inactivityTimer.current) clearTimeout(inactivityTimer.current);
     };
-  }, [step, selectedName, selectedMode, kmInput]);
+  }, [step, selectedParticipant, selectedMode, kmInput]);
 
   useEffect(() => {
     if (step !== "confirm") return;
@@ -50,8 +50,8 @@ export default function KioskPage() {
     return () => clearTimeout(timer);
   }, [step]);
 
-  function handleNameSelect(name: string) {
-    setSelectedName(name);
+  function handleParticipantSelect(participant: Participant) {
+    setSelectedParticipant(participant);
     setStep("mode");
   }
 
@@ -61,11 +61,11 @@ export default function KioskPage() {
   }
 
   function handleValidate() {
-    if (!selectedName || !selectedMode) return;
+    if (!selectedParticipant || !selectedMode) return;
     const km = Number(kmInput.replace(",", "."));
     if (!(km > 0 && km <= MAX_KM)) return;
 
-    const entry = addKioskEntry(selectedName, selectedMode, km);
+    const entry = addKioskEntry(selectedParticipant, selectedMode, km);
     setLastEntryCo2(entry.co2SavedKg);
     setTotals(getKioskTotals());
     setStep("confirm");
@@ -77,7 +77,9 @@ export default function KioskPage() {
   return (
     <div className="flex h-dvh w-dvw flex-col overflow-hidden bg-neutral-950">
       <div className="flex-1 overflow-hidden">
-        {step === "name" && <NameGrid names={PARTICIPANTS} onSelect={handleNameSelect} />}
+        {step === "name" && (
+          <ParticipantSearch participants={PARTICIPANTS} onSelect={handleParticipantSelect} />
+        )}
         {step === "mode" && <ModeSelector onSelect={handleModeSelect} />}
         {step === "km" && (
           <NumericKeypad
@@ -87,9 +89,9 @@ export default function KioskPage() {
             isValid={isKmValid}
           />
         )}
-        {step === "confirm" && selectedName && (
+        {step === "confirm" && selectedParticipant && (
           <ConfirmationScreen
-            name={selectedName}
+            name={selectedParticipant.displayName.split(" ")[0]}
             co2SavedKg={lastEntryCo2}
             onDismiss={resetFlow}
           />

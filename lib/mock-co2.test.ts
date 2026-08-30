@@ -3,12 +3,12 @@ import { estimateCo2SavedKg } from "./mock-co2";
 
 describe("estimateCo2SavedKg", () => {
   it("returns 0 for walking and cycling (no marginal emission)", () => {
-    expect(estimateCo2SavedKg("marche", 10)).toBeGreaterThan(0);
-    expect(estimateCo2SavedKg("velo", 10)).toBeGreaterThan(0);
+    expect(estimateCo2SavedKg("walk", 10)).toBeGreaterThan(0);
+    expect(estimateCo2SavedKg("bike", 10)).toBeGreaterThan(0);
   });
 
   it("saves more with walking/cycling than with the bus", () => {
-    const walking = estimateCo2SavedKg("marche", 10);
+    const walking = estimateCo2SavedKg("walk", 10);
     const bus = estimateCo2SavedKg("bus", 10);
     expect(walking).toBeGreaterThan(bus);
   });
@@ -20,6 +20,6 @@ describe("estimateCo2SavedKg", () => {
   });
 
   it("never returns a negative value", () => {
-    expect(estimateCo2SavedKg("covoiturage", 1)).toBeGreaterThanOrEqual(0);
+    expect(estimateCo2SavedKg("carpool", 1)).toBeGreaterThanOrEqual(0);
   });
 });

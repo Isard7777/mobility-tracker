@@ -21,9 +21,9 @@ export function ConfirmationScreen({ name, co2SavedKg, onDismiss }: Confirmation
       >
         🎉
       </motion.span>
-      <p className="text-4xl font-bold">Merci {name} !</p>
+      <p className="text-4xl font-bold">Thank you {name}!</p>
       <p className="text-2xl">
-        +{co2SavedKg.toFixed(2)} kg de CO2 évités
+        +{co2SavedKg.toFixed(2)} kg of CO2 saved
       </p>
     </button>
   );
