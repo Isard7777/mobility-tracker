@@ -6,11 +6,7 @@ type ConfirmationScreenProps = {
     onDismiss: () => void;
 };
 
-export function ConfirmationScreen({
-    name,
-    co2SavedKg,
-    onDismiss,
-}: ConfirmationScreenProps) {
+export function ConfirmationScreen({ name, co2SavedKg, onDismiss }: ConfirmationScreenProps) {
     return (
         <button
             type="button"

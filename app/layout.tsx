@@ -24,7 +24,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
         >
             {/* suppressHydrationWarning: browser extensions (e.g. Grammarly) inject attributes on body before hydration */}
-            <body className="min-h-full flex flex-col" suppressHydrationWarning>
+            <body
+                className="flex min-h-full flex-col"
+                suppressHydrationWarning
+            >
                 {children}
             </body>
         </html>

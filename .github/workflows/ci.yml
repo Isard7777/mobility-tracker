@@ -1,40 +1,40 @@
 name: CI
 
 on:
-    push:
-        branches: [main]
-    pull_request:
-        branches: [main]
+  push:
+    branches: ["**"]
+    tags: ["**"]
+  pull_request:
 
 jobs:
-    build:
-        runs-on: ubuntu-latest
-        env:
-            # Placeholder: prisma generate/build only need a syntactically valid URL, no live DB.
-            DATABASE_URL: "postgresql://mobility:mobility@localhost:5432/mobility_tracker?schema=public"
-        steps:
-            - uses: actions/checkout@v4
+  build:
+    runs-on: ubuntu-latest
+    env:
+      # Placeholder: prisma generate/build only need a syntactically valid URL, no live DB.
+      DATABASE_URL: "postgresql://mobility:mobility@localhost:5432/mobility_tracker?schema=public"
+    steps:
+      - uses: actions/checkout@v4
 
-            - uses: pnpm/action-setup@v4
-              with:
-                  version: 11
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11
 
-            - uses: actions/setup-node@v4
-              with:
-                  node-version: 24
-                  cache: pnpm
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
 
-            - name: Install dependencies
-              run: pnpm install --frozen-lockfile
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
 
-            - name: Lint
-              run: pnpm lint
+      - name: Lint
+        run: pnpm lint
 
-            - name: Check formatting
-              run: pnpm format:check
+      - name: Check formatting
+        run: pnpm format:check
 
-            - name: Unit tests
-              run: pnpm test
+      - name: Unit tests
+        run: pnpm test
 
-            - name: Build
-              run: pnpm build
+      - name: Build
+        run: pnpm build
