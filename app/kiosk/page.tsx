@@ -5,7 +5,6 @@ import { getTotals } from "@/lib/totals";
 export const dynamic = "force-dynamic";
 
 export default async function KioskPage() {
-  const totals = await getTotals();
-  return <KioskFlow initialTotals={totals} />;
+    const totals = await getTotals();
+    return <KioskFlow initialTotals={totals} />;
 }
-
