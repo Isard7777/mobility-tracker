@@ -6,8 +6,7 @@
 const KG_CO2_PER_TREE_PER_YEAR = 25;
 const BRUSSELS_PARIS_ROUND_TRIP_KM = 620;
 const CAR_SOLO_FACTOR_KG_PER_KM = 0.218;
-const KG_CO2_PER_BRUSSELS_PARIS_TRIP =
-    BRUSSELS_PARIS_ROUND_TRIP_KM * CAR_SOLO_FACTOR_KG_PER_KM;
+const KG_CO2_PER_BRUSSELS_PARIS_TRIP = BRUSSELS_PARIS_ROUND_TRIP_KM * CAR_SOLO_FACTOR_KG_PER_KM;
 
 export type Equivalents = {
     treeYears: number;
@@ -17,8 +16,6 @@ export type Equivalents = {
 export function getEquivalents(co2SavedKg: number): Equivalents {
     return {
         treeYears: Number((co2SavedKg / KG_CO2_PER_TREE_PER_YEAR).toFixed(1)),
-        carTripsBrusselsParis: Number(
-            (co2SavedKg / KG_CO2_PER_BRUSSELS_PARIS_TRIP).toFixed(1),
-        ),
+        carTripsBrusselsParis: Number((co2SavedKg / KG_CO2_PER_BRUSSELS_PARIS_TRIP).toFixed(1)),
     };
 }

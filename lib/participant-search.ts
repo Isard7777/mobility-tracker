@@ -6,7 +6,7 @@ const DEFAULT_LIMIT = 8;
 export function filterParticipants(
     participants: readonly Participant[],
     query: string,
-    limit = DEFAULT_LIMIT,
+    limit = DEFAULT_LIMIT
 ): Participant[] {
     const normalizedQuery = normalize(query);
     if (!normalizedQuery) return participants.slice(0, limit);
@@ -14,8 +14,7 @@ export function filterParticipants(
     return participants
         .filter(
             (p) =>
-                normalize(p.quadrigram).includes(normalizedQuery) ||
-                normalize(p.displayName).includes(normalizedQuery),
+                normalize(p.quadrigram).includes(normalizedQuery) || normalize(p.displayName).includes(normalizedQuery)
         )
         .slice(0, limit);
 }

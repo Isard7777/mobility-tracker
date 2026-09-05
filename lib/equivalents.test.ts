@@ -13,10 +13,7 @@ describe("getEquivalents", () => {
         const a = getEquivalents(25);
         const b = getEquivalents(50);
         expect(b.treeYears).toBeCloseTo(a.treeYears * 2, 5);
-        expect(b.carTripsBrusselsParis).toBeCloseTo(
-            a.carTripsBrusselsParis * 2,
-            5,
-        );
+        expect(b.carTripsBrusselsParis).toBeCloseTo(a.carTripsBrusselsParis * 2, 5);
     });
 
     it("one tree-year equivalent is roughly 25 kg of CO2", () => {

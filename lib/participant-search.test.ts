@@ -14,21 +14,15 @@ describe("filterParticipants", () => {
     });
 
     it("matches by quadrigramme, case-insensitive", () => {
-        expect(filterParticipants(PARTICIPANTS, "adup")).toEqual([
-            PARTICIPANTS[0],
-        ]);
+        expect(filterParticipants(PARTICIPANTS, "adup")).toEqual([PARTICIPANTS[0]]);
     });
 
     it("matches by display name substring", () => {
-        expect(filterParticipants(PARTICIPANTS, "dupont")).toEqual([
-            PARTICIPANTS[0],
-        ]);
+        expect(filterParticipants(PARTICIPANTS, "dupont")).toEqual([PARTICIPANTS[0]]);
     });
 
     it("ignores accents", () => {
-        expect(filterParticipants(PARTICIPANTS, "gaelle")).toEqual([
-            PARTICIPANTS[2],
-        ]);
+        expect(filterParticipants(PARTICIPANTS, "gaelle")).toEqual([PARTICIPANTS[2]]);
     });
 
     it("returns an empty array when nothing matches", () => {

@@ -8,29 +8,33 @@ import { ModeSelector } from "@/components/kiosk/ModeSelector";
 import { NumericKeypad } from "@/components/kiosk/NumericKeypad";
 import { ConfirmationScreen } from "@/components/kiosk/ConfirmationScreen";
 import { ContextBanner } from "@/components/kiosk/ContextBanner";
+import type { Totals } from "@/lib/totals";
 
 type Step = "name" | "mode" | "km" | "confirm";
 
-type Totals = {
-    totalKm: number;
-    totalCo2SavedKg: number;
-    participantsCount: number;
-};
-
 type KioskFlowProps = {
     initialTotals: Totals;
+    showIndividualWeeklyCo2: boolean;
 };
 
 const INACTIVITY_RESET_MS = 30_000;
 const CONFIRMATION_DISPLAY_MS = 3_000;
-const MAX_KM = 200;
+const MAX_ONE_WAY_KM = 100;
 
-export function KioskFlow({ initialTotals }: KioskFlowProps) {
+function getToday(): string {
+    const now = new Date();
+    const month = String(now.getMonth() + 1).padStart(2, "0");
+    const day = String(now.getDate()).padStart(2, "0");
+    return `${now.getFullYear()}-${month}-${day}`;
+}
+
+export function KioskFlow({ initialTotals, showIndividualWeeklyCo2 }: KioskFlowProps) {
     const [step, setStep] = useState<Step>("name");
-    const [selectedParticipant, setSelectedParticipant] =
-        useState<Participant | null>(null);
+    const [selectedParticipant, setSelectedParticipant] = useState<Participant | null>(null);
     const [selectedMode, setSelectedMode] = useState<ModeId | null>(null);
     const [kmInput, setKmInput] = useState("");
+    const [entryDate, setEntryDate] = useState(getToday);
+    const [carpoolOccupants, setCarpoolOccupants] = useState(2);
     const [lastEntryCo2, setLastEntryCo2] = useState(0);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [totals, setTotals] = useState<Totals>(initialTotals);
@@ -39,7 +43,8 @@ export function KioskFlow({ initialTotals }: KioskFlowProps) {
 
     async function refreshTotals() {
         try {
-            const res = await fetch("/api/totals");
+            const url = showIndividualWeeklyCo2 ? "/api/totals?includeIndividualWeeklyCo2=true" : "/api/totals";
+            const res = await fetch(url);
             if (!res.ok) return;
             setTotals(await res.json());
         } catch {
@@ -52,6 +57,8 @@ export function KioskFlow({ initialTotals }: KioskFlowProps) {
         setSelectedParticipant(null);
         setSelectedMode(null);
         setKmInput("");
+        setEntryDate(getToday());
+        setCarpoolOccupants(2);
     }
 
     // Resets the form after 30s of inactivity mid-entry (not on the idle name search screen).
@@ -71,6 +78,23 @@ export function KioskFlow({ initialTotals }: KioskFlowProps) {
         return () => clearTimeout(timer);
     }, [step]);
 
+    useEffect(() => {
+        const streamUrl = showIndividualWeeklyCo2 ? "/api/stream?includeIndividualWeeklyCo2=true" : "/api/stream";
+        const stream = new EventSource(streamUrl);
+        const updateTotals = (event: MessageEvent<string>) => {
+            try {
+                const payload = JSON.parse(event.data) as { totals: Totals };
+                setTotals(payload.totals);
+            } catch {
+                // Ignore malformed stream messages and wait for the next update.
+            }
+        };
+
+        stream.addEventListener("totals", updateTotals);
+        stream.addEventListener("update", updateTotals);
+        return () => stream.close();
+    }, [showIndividualWeeklyCo2]);
+
     function handleParticipantSelect(participant: Participant) {
         setSelectedParticipant(participant);
         setStep("mode");
@@ -81,10 +105,23 @@ export function KioskFlow({ initialTotals }: KioskFlowProps) {
         setStep("km");
     }
 
+    function handleBack() {
+        if (step === "mode") {
+            setSelectedParticipant(null);
+            setStep("name");
+            return;
+        }
+        if (step === "km") {
+            setSelectedMode(null);
+            setKmInput("");
+            setStep("mode");
+        }
+    }
+
     async function handleValidate() {
         if (!selectedParticipant || !selectedMode || isSubmitting) return;
         const km = Number(kmInput.replace(",", "."));
-        if (!(km > 0 && km <= MAX_KM)) return;
+        if (!(km > 0 && km <= MAX_ONE_WAY_KM)) return;
 
         setIsSubmitting(true);
         try {
@@ -94,7 +131,9 @@ export function KioskFlow({ initialTotals }: KioskFlowProps) {
                 body: JSON.stringify({
                     quadrigram: selectedParticipant.quadrigram,
                     mode: selectedMode,
-                    km,
+                    oneWayKm: km,
+                    entryDate,
+                    ...(selectedMode === "carpool" ? { carpoolOccupants } : {}),
                     source: "kiosk",
                 }),
             });
@@ -112,19 +151,33 @@ export function KioskFlow({ initialTotals }: KioskFlowProps) {
     }
 
     const km = Number(kmInput.replace(",", "."));
-    const isKmValid = km > 0 && km <= MAX_KM && !isSubmitting;
+    const isKmValid = km > 0 && km <= MAX_ONE_WAY_KM && !isSubmitting;
 
     return (
-        <div className="flex h-dvh w-dvw flex-col overflow-hidden bg-neutral-950">
-            <div className="flex-1 overflow-hidden">
+        <div className="relative flex h-dvh w-dvw flex-col overflow-hidden bg-[#f6fbf4] text-[#17351f]">
+            <div
+                aria-hidden="true"
+                className="pointer-events-none absolute inset-0 bg-cover bg-center opacity-75"
+                style={{ backgroundImage: "url('/images/ralf1403-flower-meadow-7955256.jpg')" }}
+            />
+            <div
+                aria-hidden="true"
+                className="pointer-events-none absolute inset-0 bg-white/20"
+            />
+            <div className="relative z-10 flex-1 overflow-hidden">
                 {step === "name" && (
                     <ParticipantSearch
                         participants={PARTICIPANTS}
+                        weeklyCo2ByQuadrigram={totals.weeklyCo2ByQuadrigram}
                         onSelect={handleParticipantSelect}
                     />
                 )}
                 {step === "mode" && (
-                    <ModeSelector onSelect={handleModeSelect} />
+                    <ModeSelector
+                        onSelect={handleModeSelect}
+                        onBack={handleBack}
+                        onCancel={resetFlow}
+                    />
                 )}
                 {step === "km" && (
                     <NumericKeypad
@@ -132,6 +185,12 @@ export function KioskFlow({ initialTotals }: KioskFlowProps) {
                         onChange={setKmInput}
                         onValidate={handleValidate}
                         isValid={isKmValid}
+                        entryDate={entryDate}
+                        onEntryDateChange={setEntryDate}
+                        carpoolOccupants={selectedMode === "carpool" ? carpoolOccupants : undefined}
+                        onCarpoolOccupantsChange={setCarpoolOccupants}
+                        onBack={handleBack}
+                        onCancel={resetFlow}
                     />
                 )}
                 {step === "confirm" && selectedParticipant && (
@@ -144,6 +203,7 @@ export function KioskFlow({ initialTotals }: KioskFlowProps) {
             </div>
             <ContextBanner
                 totalKm={totals.totalKm}
+                totalCo2SavedKg={totals.totalCo2SavedKg}
                 participantsCount={totals.participantsCount}
             />
         </div>

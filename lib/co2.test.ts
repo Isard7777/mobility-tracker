@@ -22,4 +22,9 @@ describe("estimateCo2SavedKg", () => {
     it("never returns a negative value", () => {
         expect(estimateCo2SavedKg("carpool", 1)).toBeGreaterThanOrEqual(0);
     });
+
+    it("uses the declared carpool occupancy", () => {
+        expect(estimateCo2SavedKg("carpool", 10, 4)).toBeGreaterThan(estimateCo2SavedKg("carpool", 10, 2));
+        expect(estimateCo2SavedKg("carpool", 10, 1)).toBe(0);
+    });
 });

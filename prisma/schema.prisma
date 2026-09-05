@@ -8,15 +8,17 @@ datasource db {
 }
 
 model Entry {
-  id         BigInt   @id @default(autoincrement())
-  quadrigram String
-  personName String   @map("person_name")
-  team       String?
-  mode       String
-  km         Decimal  @db.Decimal(6, 2)
-  co2SavedKg Decimal  @map("co2_saved_kg") @db.Decimal(8, 3)
-  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
-  source     String   @default("web")
+  id               BigInt   @id @default(autoincrement())
+  quadrigram       String
+  personName       String   @map("person_name")
+  team             String?
+  mode             String
+  km               Decimal  @db.Decimal(6, 2)
+  carpoolOccupants Int?     @map("carpool_occupants")
+  co2SavedKg       Decimal  @map("co2_saved_kg") @db.Decimal(8, 3)
+  entryDate        DateTime @default(now()) @map("entry_date") @db.Date
+  createdAt        DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  source           String   @default("web")
 
   @@index([createdAt(sort: Desc)], map: "idx_entries_created_at")
   @@index([team], map: "idx_entries_team")
