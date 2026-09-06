@@ -1,11 +1,9 @@
-// Roster of challenge participants, edited manually (not stored in the database).
-// Identified by a four-letter employee code ("quadrigram"), e.g. first initial + 3 letters of last name.
 export type Participant = {
     quadrigram: string;
     displayName: string;
 };
 
-export const PARTICIPANTS: Participant[] = [
+export const INITIAL_PARTICIPANTS: Participant[] = [
     { quadrigram: "ADUP", displayName: "Alice Dupont" },
     { quadrigram: "BLEF", displayName: "Benoit Lefevre" },
     { quadrigram: "CMAR", displayName: "Chloe Martin" },

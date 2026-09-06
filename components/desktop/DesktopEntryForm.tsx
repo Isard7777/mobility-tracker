@@ -3,7 +3,7 @@
 import { Check, Leaf } from "lucide-react";
 import { FormEvent, useState } from "react";
 import { MODES, type ModeId } from "@/config/modes";
-import { PARTICIPANTS } from "@/config/participants";
+import type { Participant } from "@/config/participants";
 
 const LAST_QUADRIGRAM_KEY = "mobility-tracker:last-quadrigram";
 
@@ -14,7 +14,11 @@ function getToday(): string {
     return `${now.getFullYear()}-${month}-${day}`;
 }
 
-export function DesktopEntryForm() {
+type DesktopEntryFormProps = {
+    participants: Participant[];
+};
+
+export function DesktopEntryForm({ participants }: DesktopEntryFormProps) {
     const [employeeInput, setEmployeeInput] = useState("");
     const [mode, setMode] = useState<ModeId>("bike");
     const [oneWayKm, setOneWayKm] = useState("");
@@ -24,7 +28,7 @@ export function DesktopEntryForm() {
     const [successMessage, setSuccessMessage] = useState("");
     const [errorMessage, setErrorMessage] = useState("");
 
-    const selectedParticipant = PARTICIPANTS.find(
+    const selectedParticipant = participants.find(
         (participant) =>
             participant.quadrigram.toLowerCase() === employeeInput.trim().toLowerCase() ||
             participant.displayName.toLowerCase() === employeeInput.trim().toLowerCase()
@@ -103,7 +107,7 @@ export function DesktopEntryForm() {
                         </button>
                     </div>
                     <datalist id="participants">
-                        {PARTICIPANTS.map((participant) => (
+                        {participants.map((participant) => (
                             <option
                                 key={participant.quadrigram}
                                 value={participant.quadrigram}

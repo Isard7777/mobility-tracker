@@ -3,13 +3,46 @@ services:
         image: postgres:16-alpine
         restart: unless-stopped
         environment:
-            POSTGRES_USER: mobility
-            POSTGRES_PASSWORD: mobility
-            POSTGRES_DB: mobility_tracker
+            POSTGRES_USER: ${POSTGRES_USER:-mobility}
+            POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-mobility}
+            POSTGRES_DB: ${POSTGRES_DB:-mobility_tracker}
         ports:
-            - "5432:5432"
+            - "${POSTGRES_PORT:-5432}:5432"
         volumes:
             - postgres-data:/var/lib/postgresql/data
+        healthcheck:
+            test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+            interval: 5s
+            timeout: 5s
+            retries: 10
+
+    migrate:
+        build:
+            context: .
+            target: migrator
+        environment:
+            DATABASE_URL: postgresql://${POSTGRES_USER:-mobility}:${POSTGRES_PASSWORD:-mobility}@postgres:5432/${POSTGRES_DB:-mobility_tracker}?schema=public
+        depends_on:
+            postgres:
+                condition: service_healthy
+        restart: "no"
+
+    app:
+        build:
+            context: .
+            target: production
+            args:
+                NEXT_PUBLIC_TREE_GROWTH_MAX_KM: ${NEXT_PUBLIC_TREE_GROWTH_MAX_KM:-10000}
+        restart: unless-stopped
+        environment:
+            DATABASE_URL: postgresql://${POSTGRES_USER:-mobility}:${POSTGRES_PASSWORD:-mobility}@postgres:5432/${POSTGRES_DB:-mobility_tracker}?schema=public
+            SHOW_INDIVIDUAL_WEEKLY_CO2: ${SHOW_INDIVIDUAL_WEEKLY_CO2:-false}
+            ADMIN_PASSWORD: ${ADMIN_PASSWORD:-}
+        ports:
+            - "${APP_PORT:-3000}:3000"
+        depends_on:
+            migrate:
+                condition: service_completed_successfully
 
 volumes:
     postgres-data:
