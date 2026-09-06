@@ -33,7 +33,7 @@ export function NumericKeypad({
             return;
         }
         if (key === "," && value.includes(",")) return;
-        if (value.replace(",", "").length >= 5) return;
+        if (value.includes(",") && value.split(",")[1].length >= 2) return;
         onChange(value + key);
     }
 

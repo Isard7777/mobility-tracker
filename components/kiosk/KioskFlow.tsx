@@ -19,7 +19,6 @@ type KioskFlowProps = {
 
 const INACTIVITY_RESET_MS = 30_000;
 const CONFIRMATION_DISPLAY_MS = 3_000;
-const MAX_ONE_WAY_KM = 100;
 
 function getToday(): string {
     const now = new Date();
@@ -121,7 +120,7 @@ export function KioskFlow({ initialTotals, showIndividualWeeklyCo2 }: KioskFlowP
     async function handleValidate() {
         if (!selectedParticipant || !selectedMode || isSubmitting) return;
         const km = Number(kmInput.replace(",", "."));
-        if (!(km > 0 && km <= MAX_ONE_WAY_KM)) return;
+        if (!(km > 0 && Number.isFinite(km))) return;
 
         setIsSubmitting(true);
         try {
@@ -151,7 +150,7 @@ export function KioskFlow({ initialTotals, showIndividualWeeklyCo2 }: KioskFlowP
     }
 
     const km = Number(kmInput.replace(",", "."));
-    const isKmValid = km > 0 && km <= MAX_ONE_WAY_KM && !isSubmitting;
+    const isKmValid = km > 0 && Number.isFinite(km) && !isSubmitting;
 
     return (
         <div className="relative flex h-dvh w-dvw flex-col overflow-hidden bg-[#f6fbf4] text-[#17351f]">

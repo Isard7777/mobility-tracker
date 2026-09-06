@@ -7,7 +7,7 @@ export const createEntrySchema = z
     .object({
         quadrigram: z.string().trim().min(1).max(10),
         mode: z.enum(MODE_IDS),
-        oneWayKm: z.number().positive().max(100),
+        oneWayKm: z.number().positive().finite(),
         entryDate: z.string().date().optional(),
         carpoolOccupants: z.number().int().min(2).max(8).optional(),
         source: z.enum(["kiosk", "web"]).default("web"),
