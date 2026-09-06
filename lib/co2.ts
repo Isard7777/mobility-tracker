@@ -1,18 +1,16 @@
 import type { ModeId } from "@/config/modes";
 
-// Emission factors in kg CO2e per passenger-km.
-// Source: ADEME Base Empreinte (https://base-empreinte.ademe.fr) national averages,
-// used as inspiration by the Wallonia mobility calculator (https://mobilite.wallonie.be).
-// Walking and cycling have no marginal tank-to-wheel emissions.
-const CAR_SOLO_FACTOR_KG_PER_KM = 0.218;
+// Lifecycle emission factors in kg CO2e per passenger-km from ADEME Base Empreinte,
+// published by Impact CO2's transport API on 2026-09-06: https://impactco2.fr/api/v1/transport?km=1&displayAll=1&includeConstruction=1.
+export const CAR_SOLO_FACTOR_KG_PER_KM = 0.14225341222954335;
 
 export const MODE_FACTORS_KG_PER_KM: Record<ModeId, number> = {
-    bike: 0,
+    bike: 0.00017,
     walk: 0,
-    ebike: 0.003,
-    bus: 0.103,
-    train: 0.0242,
-    tram: 0.0035,
+    ebike: 0.01095,
+    bus: 0.12242,
+    train: 0.00898,
+    tram: 0.00428,
     carpool: CAR_SOLO_FACTOR_KG_PER_KM / 2,
 };
 

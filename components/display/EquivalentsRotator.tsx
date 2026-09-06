@@ -1,7 +1,7 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
-import { Beef, Car, Plane, ShowerHead, Smartphone, TreePine } from "lucide-react";
+import { Beef, Car, Plane, ShowerHead, Smartphone, Train, TreePine } from "lucide-react";
 import { useEffect, useState } from "react";
 import { getEquivalents } from "@/lib/equivalents";
 
@@ -14,39 +14,52 @@ export function EquivalentsRotator({ co2SavedKg }: EquivalentsRotatorProps) {
     const equivalents = getEquivalents(co2SavedKg);
     const items = [
         {
-            icon: TreePine,
-            value: equivalents.treeYears,
-            label: "tree-years of CO2 absorption",
-        },
-        {
             icon: Car,
             value: equivalents.liegeBrusselsCarRoundTrips,
             label: "Liege-Brussels car round trips",
+            assumption: "200 km round trip, average combustion car",
+        },
+        {
+            icon: Train,
+            value: equivalents.intercityTrainKm,
+            label: "km by intercity train",
+            assumption: "ADEME lifecycle factor",
         },
         {
             icon: Plane,
-            value: equivalents.flightHours,
-            label: "hours of flying",
+            value: equivalents.shortHaulFlightKm,
+            label: "km on a short-haul flight",
+            assumption: "ADEME lifecycle factor",
         },
         {
-            icon: Smartphone,
-            value: equivalents.smartphoneChargeYears,
-            label: "smartphone charging years",
-        },
-        {
-            icon: ShowerHead,
-            value: equivalents.hotShowers,
-            label: "hot showers",
+            icon: TreePine,
+            value: equivalents.treeYears,
+            label: "tree-years of CO2 absorption",
+            assumption: "estimate: 25 kg CO2e per tree per year",
         },
         {
             icon: Beef,
             value: equivalents.beefSteaks,
-            label: "beef steaks",
+            label: "150 g beef steaks",
+            assumption: "Agribalyse estimate: 4.2 kg CO2e per steak",
+        },
+        {
+            icon: ShowerHead,
+            value: equivalents.hotShowers,
+            label: "5-minute hot showers",
+            assumption: "estimate: gas-heated water, 8 L per minute",
+        },
+        {
+            icon: Smartphone,
+            value: equivalents.smartphoneChargingYears,
+            label: "years of smartphone charging",
+            assumption: "estimate: 5 kWh per year, Belgian grid",
         },
         {
             icon: Car,
             value: equivalents.liegeParisCarRoundTrips,
             label: "Liege-Paris car round trips",
+            assumption: "600 km round trip, average combustion car",
         },
     ];
 
@@ -80,6 +93,7 @@ export function EquivalentsRotator({ co2SavedKg }: EquivalentsRotatorProps) {
                     </p>
                 </motion.div>
             </AnimatePresence>
+            <p className="mt-1 text-xs text-emerald-100/80">{activeItem.assumption}</p>
         </section>
     );
 }

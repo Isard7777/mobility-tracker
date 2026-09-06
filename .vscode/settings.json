@@ -1,6 +1,7 @@
 {
     "prisma.pinToPrisma6": true,
     "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "files.eol": "\n",
     "editor.formatOnSave": true,
     "editor.formatOnPaste": true,
     "editor.codeActionsOnSave": {
@@ -9,5 +10,7 @@
     "[prisma]": {
         "editor.defaultFormatter": "Prisma.prisma"
     },
-    "cSpell.words": ["quadrigram"]
+    "cSpell.words": [
+        "quadrigram"
+    ]
 }

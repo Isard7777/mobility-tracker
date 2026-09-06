@@ -1,34 +1,39 @@
-// Approximate communication equivalents for the wall display, not calculation inputs.
-const KG_CO2_PER_TREE_PER_YEAR = 25;
-const CAR_SOLO_FACTOR_KG_PER_KM = 0.218;
+import { CAR_SOLO_FACTOR_KG_PER_KM, MODE_FACTORS_KG_PER_KM } from "./co2";
+
+// Transport-only display comparisons use the same ADEME/Impact CO2 dataset as lib/co2.ts.
 const LIEGE_BRUSSELS_ROUND_TRIP_KM = 200;
 const LIEGE_PARIS_ROUND_TRIP_KM = 600;
-const KG_CO2_PER_FLIGHT_HOUR = 100;
-const KG_CO2_PER_HOT_SHOWER = 10;
-const KG_CO2_PER_BEEF_STEAK = 1;
+const SHORT_HAUL_FLIGHT_KG_CO2_PER_KM = 0.224572;
+// Communication estimates with the assumptions repeated in the display labels.
+const KG_CO2_PER_TREE_PER_YEAR = 25;
+const KG_CO2_PER_BEEF_STEAK = 4.2;
+const KG_CO2_PER_HOT_SHOWER = 0.4;
+const KG_CO2_PER_SMARTPHONE_CHARGING_YEAR = 0.7;
 
 export type Equivalents = {
-    treeYears: number;
     liegeBrusselsCarRoundTrips: number;
     liegeParisCarRoundTrips: number;
-    flightHours: number;
-    smartphoneChargeYears: number;
-    hotShowers: number;
+    intercityTrainKm: number;
+    shortHaulFlightKm: number;
+    treeYears: number;
     beefSteaks: number;
+    hotShowers: number;
+    smartphoneChargingYears: number;
 };
 
 export function getEquivalents(co2SavedKg: number): Equivalents {
     return {
-        treeYears: Number((co2SavedKg / KG_CO2_PER_TREE_PER_YEAR).toFixed(1)),
         liegeBrusselsCarRoundTrips: Number(
             (co2SavedKg / (LIEGE_BRUSSELS_ROUND_TRIP_KM * CAR_SOLO_FACTOR_KG_PER_KM)).toFixed(1)
         ),
         liegeParisCarRoundTrips: Number(
             (co2SavedKg / (LIEGE_PARIS_ROUND_TRIP_KM * CAR_SOLO_FACTOR_KG_PER_KM)).toFixed(1)
         ),
-        flightHours: Number((co2SavedKg / KG_CO2_PER_FLIGHT_HOUR).toFixed(1)),
-        smartphoneChargeYears: Number(co2SavedKg.toFixed(1)),
-        hotShowers: Number((co2SavedKg / KG_CO2_PER_HOT_SHOWER).toFixed(1)),
+        intercityTrainKm: Number((co2SavedKg / MODE_FACTORS_KG_PER_KM.train).toFixed(1)),
+        shortHaulFlightKm: Number((co2SavedKg / SHORT_HAUL_FLIGHT_KG_CO2_PER_KM).toFixed(1)),
+        treeYears: Number((co2SavedKg / KG_CO2_PER_TREE_PER_YEAR).toFixed(1)),
         beefSteaks: Number((co2SavedKg / KG_CO2_PER_BEEF_STEAK).toFixed(1)),
+        hotShowers: Number((co2SavedKg / KG_CO2_PER_HOT_SHOWER).toFixed(1)),
+        smartphoneChargingYears: Number((co2SavedKg / KG_CO2_PER_SMARTPHONE_CHARGING_YEAR).toFixed(1)),
     };
 }

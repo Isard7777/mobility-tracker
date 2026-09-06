@@ -1,5 +1,7 @@
 node_modules/
 .next/
+.vscode/
+.github/
 out/
 coverage/
 pnpm-lock.yaml

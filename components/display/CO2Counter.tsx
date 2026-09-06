@@ -29,6 +29,7 @@ export function CO2Counter({ value }: CO2CounterProps) {
             <motion.p className="text-6xl font-bold tracking-tight text-white tabular-nums xl:text-8xl">
                 {displayValue}
             </motion.p>
+            <p className="mt-2 text-xs text-emerald-100/80">ADEME / Impact CO2 lifecycle factors</p>
         </section>
     );
 }

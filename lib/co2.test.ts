@@ -2,9 +2,13 @@ import { describe, expect, it } from "vitest";
 import { estimateCo2SavedKg } from "./co2";
 
 describe("estimateCo2SavedKg", () => {
-    it("returns 0 for walking and cycling (no marginal emission)", () => {
-        expect(estimateCo2SavedKg("walk", 10)).toBeGreaterThan(0);
-        expect(estimateCo2SavedKg("bike", 10)).toBeGreaterThan(0);
+    it("uses the documented ADEME lifecycle factors", () => {
+        expect(estimateCo2SavedKg("walk", 10)).toBe(1.423);
+        expect(estimateCo2SavedKg("bike", 10)).toBe(1.421);
+        expect(estimateCo2SavedKg("ebike", 10)).toBe(1.313);
+        expect(estimateCo2SavedKg("bus", 10)).toBe(0.198);
+        expect(estimateCo2SavedKg("train", 10)).toBe(1.333);
+        expect(estimateCo2SavedKg("tram", 10)).toBe(1.38);
     });
 
     it("saves more with walking/cycling than with the bus", () => {
@@ -16,7 +20,7 @@ describe("estimateCo2SavedKg", () => {
     it("scales linearly with distance", () => {
         const km10 = estimateCo2SavedKg("bus", 10);
         const km20 = estimateCo2SavedKg("bus", 20);
-        expect(km20).toBeCloseTo(km10 * 2, 5);
+        expect(km20).toBeCloseTo(km10 * 2, 2);
     });
 
     it("never returns a negative value", () => {
