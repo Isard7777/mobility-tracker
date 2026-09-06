@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
-import { PARTICIPANTS } from "@/config/participants";
 import { estimateCo2SavedKg } from "@/lib/co2";
 import { publishEntry } from "@/lib/sse";
 import { createEntrySchema } from "@/lib/validation";
@@ -15,7 +14,9 @@ export async function POST(request: Request) {
     }
 
     const { quadrigram, mode, oneWayKm, entryDate, carpoolOccupants, source } = parsed.data;
-    const participant = PARTICIPANTS.find((p) => p.quadrigram.toLowerCase() === quadrigram.toLowerCase());
+    const participant = await prisma.participant.findUnique({
+        where: { quadrigram: quadrigram.toUpperCase() },
+    });
     if (!participant) {
         return NextResponse.json({ error: "Unknown quadrigram" }, { status: 400 });
     }

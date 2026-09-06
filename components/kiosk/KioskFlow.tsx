@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { PARTICIPANTS, type Participant } from "@/config/participants";
+import type { Participant } from "@/config/participants";
 import type { ModeId } from "@/config/modes";
 import { ParticipantSearch } from "@/components/kiosk/ParticipantSearch";
 import { ModeSelector } from "@/components/kiosk/ModeSelector";
@@ -14,6 +14,7 @@ type Step = "name" | "mode" | "km" | "confirm";
 
 type KioskFlowProps = {
     initialTotals: Totals;
+    participants: Participant[];
     showIndividualWeeklyCo2: boolean;
 };
 
@@ -27,7 +28,7 @@ function getToday(): string {
     return `${now.getFullYear()}-${month}-${day}`;
 }
 
-export function KioskFlow({ initialTotals, showIndividualWeeklyCo2 }: KioskFlowProps) {
+export function KioskFlow({ initialTotals, participants, showIndividualWeeklyCo2 }: KioskFlowProps) {
     const [step, setStep] = useState<Step>("name");
     const [selectedParticipant, setSelectedParticipant] = useState<Participant | null>(null);
     const [selectedMode, setSelectedMode] = useState<ModeId | null>(null);
@@ -166,7 +167,7 @@ export function KioskFlow({ initialTotals, showIndividualWeeklyCo2 }: KioskFlowP
             <div className="relative z-10 flex-1 overflow-hidden">
                 {step === "name" && (
                     <ParticipantSearch
-                        participants={PARTICIPANTS}
+                        participants={participants}
                         weeklyCo2ByQuadrigram={totals.weeklyCo2ByQuadrigram}
                         onSelect={handleParticipantSelect}
                     />
