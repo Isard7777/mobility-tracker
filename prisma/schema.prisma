@@ -13,7 +13,7 @@ model Entry {
   personName       String   @map("person_name")
   team             String?
   mode             String
-  km               Decimal  @db.Decimal(6, 2)
+  km               Decimal  @db.Decimal(10, 2)
   carpoolOccupants Int?     @map("carpool_occupants")
   co2SavedKg       Decimal  @map("co2_saved_kg") @db.Decimal(8, 3)
   entryDate        DateTime @default(now()) @map("entry_date") @db.Date

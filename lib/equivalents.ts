@@ -1,21 +1,34 @@
-// Rough, illustrative equivalents to make a CO2 figure tangible on the display screen.
-// Sources (order-of-magnitude approximations, not scientific references):
-// - a mature tree absorbs roughly 25 kg of CO2 per year (ADEME / common forestry estimates).
-// - a solo car round trip Brussels-Paris (~620 km) emits roughly 135 kg of CO2
-//   at the same 0.218 kg CO2e/km average car factor used in lib/co2.ts.
+// Approximate communication equivalents for the wall display, not calculation inputs.
 const KG_CO2_PER_TREE_PER_YEAR = 25;
-const BRUSSELS_PARIS_ROUND_TRIP_KM = 620;
 const CAR_SOLO_FACTOR_KG_PER_KM = 0.218;
-const KG_CO2_PER_BRUSSELS_PARIS_TRIP = BRUSSELS_PARIS_ROUND_TRIP_KM * CAR_SOLO_FACTOR_KG_PER_KM;
+const LIEGE_BRUSSELS_ROUND_TRIP_KM = 200;
+const LIEGE_PARIS_ROUND_TRIP_KM = 600;
+const KG_CO2_PER_FLIGHT_HOUR = 100;
+const KG_CO2_PER_HOT_SHOWER = 10;
+const KG_CO2_PER_BEEF_STEAK = 1;
 
 export type Equivalents = {
     treeYears: number;
-    carTripsBrusselsParis: number;
+    liegeBrusselsCarRoundTrips: number;
+    liegeParisCarRoundTrips: number;
+    flightHours: number;
+    smartphoneChargeYears: number;
+    hotShowers: number;
+    beefSteaks: number;
 };
 
 export function getEquivalents(co2SavedKg: number): Equivalents {
     return {
         treeYears: Number((co2SavedKg / KG_CO2_PER_TREE_PER_YEAR).toFixed(1)),
-        carTripsBrusselsParis: Number((co2SavedKg / KG_CO2_PER_BRUSSELS_PARIS_TRIP).toFixed(1)),
+        liegeBrusselsCarRoundTrips: Number(
+            (co2SavedKg / (LIEGE_BRUSSELS_ROUND_TRIP_KM * CAR_SOLO_FACTOR_KG_PER_KM)).toFixed(1)
+        ),
+        liegeParisCarRoundTrips: Number(
+            (co2SavedKg / (LIEGE_PARIS_ROUND_TRIP_KM * CAR_SOLO_FACTOR_KG_PER_KM)).toFixed(1)
+        ),
+        flightHours: Number((co2SavedKg / KG_CO2_PER_FLIGHT_HOUR).toFixed(1)),
+        smartphoneChargeYears: Number(co2SavedKg.toFixed(1)),
+        hotShowers: Number((co2SavedKg / KG_CO2_PER_HOT_SHOWER).toFixed(1)),
+        beefSteaks: Number((co2SavedKg / KG_CO2_PER_BEEF_STEAK).toFixed(1)),
     };
 }
