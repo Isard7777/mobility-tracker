@@ -1,5 +1,6 @@
 "use client";
 
+import { motion } from "framer-motion";
 import { Leaf, Users } from "lucide-react";
 import { useEffect, useState } from "react";
 import { MODES } from "@/config/modes";
@@ -70,29 +71,35 @@ export function DesktopDashboard({ initialTotals }: DesktopDashboardProps) {
                 <section className="mt-12">
                     <p className="text-sm font-semibold tracking-[0.16em] text-lime-300 uppercase">By transport mode</p>
                     <div className="mt-5 space-y-4">
-                        {totals.byMode.map((item) => {
-                            const mode = MODES.find((candidate) => candidate.id === item.mode);
-                            const percent = totals.totalKm > 0 ? (item.km / totals.totalKm) * 100 : 0;
-                            return (
-                                <div key={item.mode}>
-                                    <div className="mb-1.5 flex items-center justify-between text-sm">
-                                        <span className="flex items-center gap-2 text-emerald-50">
-                                            <span aria-hidden="true">{mode?.emoji ?? "•"}</span>
-                                            {mode?.label ?? item.mode}
-                                        </span>
-                                        <span className="text-emerald-100/75 tabular-nums">
-                                            {item.km.toFixed(0)} km
-                                        </span>
-                                    </div>
-                                    <div className="h-2 overflow-hidden bg-white/15">
-                                        <div
-                                            className="h-full bg-lime-300 transition-[width] duration-700"
-                                            style={{ width: `${percent}%` }}
-                                        />
-                                    </div>
-                                </div>
-                            );
-                        })}
+                        {[...totals.byMode]
+                            .sort((first, second) => second.km - first.km)
+                            .map((item) => {
+                                const mode = MODES.find((candidate) => candidate.id === item.mode);
+                                const percent = totals.totalKm > 0 ? (item.km / totals.totalKm) * 100 : 0;
+                                return (
+                                    <motion.div
+                                        key={item.mode}
+                                        layout="position"
+                                        transition={{ type: "spring", stiffness: 360, damping: 32 }}
+                                    >
+                                        <div className="mb-1.5 flex items-center justify-between text-sm">
+                                            <span className="flex items-center gap-2 text-emerald-50">
+                                                <span aria-hidden="true">{mode?.emoji ?? "•"}</span>
+                                                {mode?.label ?? item.mode}
+                                            </span>
+                                            <span className="text-emerald-100/75 tabular-nums">
+                                                {item.km.toFixed(0)} km
+                                            </span>
+                                        </div>
+                                        <div className="h-2 overflow-hidden bg-white/15">
+                                            <div
+                                                className="h-full bg-lime-300 transition-[width] duration-700"
+                                                style={{ width: `${percent}%` }}
+                                            />
+                                        </div>
+                                    </motion.div>
+                                );
+                            })}
                         {totals.byMode.length === 0 && <p className="text-emerald-100/70">No journeys recorded yet</p>}
                     </div>
                 </section>

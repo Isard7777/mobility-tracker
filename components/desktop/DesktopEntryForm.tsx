@@ -20,7 +20,7 @@ type DesktopEntryFormProps = {
 
 export function DesktopEntryForm({ participants }: DesktopEntryFormProps) {
     const [employeeInput, setEmployeeInput] = useState("");
-    const [mode, setMode] = useState<ModeId>("bike");
+    const [mode, setMode] = useState<ModeId>("ebike");
     const [oneWayKm, setOneWayKm] = useState("");
     const [entryDate, setEntryDate] = useState(getToday);
     const [carpoolOccupants, setCarpoolOccupants] = useState(2);

@@ -20,7 +20,11 @@ export function ModeSelector({ onSelect, onBack, onCancel }: ModeSelectorProps) 
                         key={mode.id}
                         type="button"
                         onClick={() => onSelect(mode.id)}
-                        className="flex flex-col items-center justify-center gap-2 rounded-2xl border border-emerald-100 bg-white text-emerald-950 shadow-sm transition active:scale-95 active:border-emerald-600 active:bg-emerald-600 active:text-white"
+                        className={`flex flex-col items-center justify-center gap-2 rounded-2xl border text-emerald-950 shadow-sm transition active:scale-95 active:border-emerald-600 active:bg-emerald-600 active:text-white ${
+                            mode.id === "ebike"
+                                ? "border-lime-500 bg-lime-50 shadow-md ring-2 ring-lime-300/70"
+                                : "border-emerald-100 bg-white"
+                        }`}
                     >
                         <span className="text-5xl">{mode.emoji}</span>
                         <span className="text-xl font-semibold">{mode.label}</span>
