@@ -78,7 +78,7 @@ export function GrowingTree({ totalKm, pulseKey }: GrowingTreeProps) {
             viewBox="0 0 520 660"
             role="img"
             aria-label="A tree growing with collective travel distance"
-            className="h-full max-h-[72vh] w-full overflow-visible"
+            className="h-full max-h-[56vh] w-full overflow-visible"
             animate={{ scaleX: [1.35, 1.37, 1.35], scaleY: [1, 1.015, 1] }}
             transition={{ duration: 0.8, ease: "easeOut" }}
         >

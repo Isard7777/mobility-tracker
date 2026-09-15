@@ -6,6 +6,7 @@ describe("estimateCo2SavedKg", () => {
         expect(estimateCo2SavedKg("walk", 10)).toBe(1.423);
         expect(estimateCo2SavedKg("bike", 10)).toBe(1.421);
         expect(estimateCo2SavedKg("ebike", 10)).toBe(1.313);
+        expect(estimateCo2SavedKg("escooter", 10)).toBe(1.311);
         expect(estimateCo2SavedKg("bus", 10)).toBe(0.198);
         expect(estimateCo2SavedKg("train", 10)).toBe(1.333);
         expect(estimateCo2SavedKg("tram", 10)).toBe(1.38);

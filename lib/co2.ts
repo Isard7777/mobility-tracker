@@ -8,6 +8,9 @@ export const MODE_FACTORS_KG_PER_KM: Record<ModeId, number> = {
     bike: 0.00017,
     walk: 0,
     ebike: 0.01095,
+    // Estimate: no dedicated line item in the ADEME/Impact CO2 pull above; personal
+    // electric kick-scooters sit in the same order of magnitude as e-bikes.
+    escooter: 0.0112,
     bus: 0.12242,
     train: 0.00898,
     tram: 0.00428,

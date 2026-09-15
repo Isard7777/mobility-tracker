@@ -1,5 +1,6 @@
 export const MODES = [
     { id: "ebike", label: "E-bike", emoji: "🚲⚡" },
+    { id: "escooter", label: "E-scooter", emoji: "🛴⚡" },
     { id: "bike", label: "Bike", emoji: "🚴" },
     { id: "walk", label: "Walk", emoji: "🚶" },
     { id: "bus", label: "Bus", emoji: "🚌" },

@@ -5,10 +5,12 @@ import { CO2Counter } from "@/components/display/CO2Counter";
 import { EquivalentsRotator } from "@/components/display/EquivalentsRotator";
 import { GrowingTree } from "@/components/display/GrowingTree";
 import { IconRain } from "@/components/display/IconRain";
+import { ModeEvolutionChart } from "@/components/display/ModeEvolutionChart";
 import { RecentFeed } from "@/components/display/RecentFeed";
 import { TREE_GROWTH } from "@/config/display";
 import type { ModeId } from "@/config/modes";
 import { estimateCo2SavedKg } from "@/lib/co2";
+import { applyEntryToModeEvolution, type ModeEvolution } from "@/lib/mode-evolution-shared";
 import { RECENT_ENTRIES_LIMIT } from "@/lib/recent-entries";
 import type { StreamEntry } from "@/lib/sse";
 import type { Totals } from "@/lib/totals";
@@ -16,10 +18,11 @@ import type { Totals } from "@/lib/totals";
 type DisplayDashboardProps = {
     initialTotals: Totals;
     initialEntries: StreamEntry[];
+    initialModeEvolution: ModeEvolution;
     demo: boolean;
 };
 
-const DEMO_MODES: ModeId[] = ["bike", "walk", "bus", "train", "tram", "ebike", "carpool"];
+const DEMO_MODES: ModeId[] = ["bike", "walk", "bus", "train", "tram", "ebike", "escooter", "carpool"];
 
 function demoEntry(sequence: number): StreamEntry {
     const mode = DEMO_MODES[sequence % DEMO_MODES.length];
@@ -37,9 +40,10 @@ function demoEntry(sequence: number): StreamEntry {
     };
 }
 
-export function DisplayDashboard({ initialTotals, initialEntries, demo }: DisplayDashboardProps) {
+export function DisplayDashboard({ initialTotals, initialEntries, initialModeEvolution, demo }: DisplayDashboardProps) {
     const [totals, setTotals] = useState(initialTotals);
     const [recentEntries, setRecentEntries] = useState(initialEntries);
+    const [modeEvolution, setModeEvolution] = useState(initialModeEvolution);
     const [lastEntry, setLastEntry] = useState<StreamEntry | null>(null);
     const [isConnected, setIsConnected] = useState(false);
 
@@ -50,6 +54,7 @@ export function DisplayDashboard({ initialTotals, initialEntries, demo }: Displa
                 const entry = demoEntry(sequence++);
                 setLastEntry(entry);
                 setRecentEntries((entries) => [entry, ...entries].slice(0, RECENT_ENTRIES_LIMIT));
+                setModeEvolution((current) => applyEntryToModeEvolution(current, entry));
                 setTotals((current) => ({
                     ...current,
                     totalKm: current.totalKm + entry.km,
@@ -72,6 +77,7 @@ export function DisplayDashboard({ initialTotals, initialEntries, demo }: Displa
                             RECENT_ENTRIES_LIMIT
                         )
                     );
+                    setModeEvolution((current) => applyEntryToModeEvolution(current, payload.entry!));
                 }
             } catch {
                 // Ignore malformed stream messages and wait for the next update.
@@ -143,12 +149,17 @@ export function DisplayDashboard({ initialTotals, initialEntries, demo }: Displa
                 </div>
             </header>
 
-            <section className="relative z-10 col-start-1 row-start-2 flex min-h-0 items-center justify-center px-12 pb-6">
-                <IconRain entry={lastEntry} />
-                <GrowingTree
-                    totalKm={totals.totalKm}
-                    pulseKey={lastEntry?.id ?? "initial"}
-                />
+            <section className="relative z-10 col-start-1 row-start-2 flex min-h-0 flex-col gap-4 px-12 pb-6">
+                <div className="w-full">
+                    <ModeEvolutionChart data={modeEvolution} />
+                </div>
+                <div className="relative flex min-h-0 flex-1 items-center justify-center">
+                    <IconRain entry={lastEntry} />
+                    <GrowingTree
+                        totalKm={totals.totalKm}
+                        pulseKey={lastEntry?.id ?? "initial"}
+                    />
+                </div>
             </section>
 
             <aside className="relative z-10 col-start-2 row-start-2 grid min-h-0 grid-rows-[auto_1px_96px_1px_minmax(0,1fr)] gap-y-6 overflow-hidden border-l border-white/15 px-12 py-4">
