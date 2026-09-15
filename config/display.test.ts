@@ -8,10 +8,10 @@ import {
 } from "./display";
 
 describe("tree growth configuration", () => {
-    it("divides the configured maximum into 20 equal stages", () => {
-        expect(getTreeGrowthStep(500)).toBe(1);
-        expect(getTreeGrowthStep(5_000)).toBe(10);
-        expect(getTreeGrowthStep(TREE_GROWTH.maxKm)).toBe(20);
+    it("divides the configured maximum into 100 equal stages", () => {
+        expect(getTreeGrowthStep(500)).toBe(5);
+        expect(getTreeGrowthStep(5_000)).toBe(50);
+        expect(getTreeGrowthStep(TREE_GROWTH.maxKm)).toBe(100);
     });
 
     it("caps visual progress without limiting the entered kilometres", () => {
