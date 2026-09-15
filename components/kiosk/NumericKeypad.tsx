@@ -13,6 +13,8 @@ type NumericKeypadProps = {
     onCarpoolOccupantsChange: (occupants: number) => void;
     onBack: () => void;
     onCancel: () => void;
+    isCorrection?: boolean;
+    errorMessage?: string;
 };
 
 export function NumericKeypad({
@@ -26,6 +28,8 @@ export function NumericKeypad({
     onCarpoolOccupantsChange,
     onBack,
     onCancel,
+    isCorrection = false,
+    errorMessage = "",
 }: NumericKeypadProps) {
     function pressKey(key: string) {
         if (key === "⌫") {
@@ -52,8 +56,9 @@ export function NumericKeypad({
                     <input
                         type="date"
                         value={entryDate}
+                        disabled={isCorrection}
                         onChange={(event) => onEntryDateChange(event.target.value)}
-                        className="rounded-xl border border-emerald-200 bg-white px-4 py-2 text-lg font-medium shadow-sm outline-none focus:ring-2 focus:ring-emerald-500"
+                        className="rounded-xl border border-emerald-200 bg-white px-4 py-2 text-lg font-medium shadow-sm outline-none focus:ring-2 focus:ring-emerald-500 disabled:bg-emerald-50 disabled:text-emerald-900/50"
                     />
                 </label>
                 {isCarpool && (
@@ -104,13 +109,15 @@ export function NumericKeypad({
                 ))}
             </div>
 
+            {errorMessage && <p className="text-sm font-semibold text-red-700">{errorMessage}</p>}
+
             <button
                 type="button"
                 disabled={!isValid}
                 onClick={onValidate}
                 className="w-full max-w-xs rounded-xl bg-emerald-700 py-3 text-xl font-bold text-white shadow-lg shadow-emerald-900/20 transition active:scale-95 disabled:cursor-not-allowed disabled:bg-emerald-100 disabled:text-emerald-800/45"
             >
-                Confirm
+                {isCorrection ? "Save correction" : "Confirm"}
             </button>
         </div>
     );

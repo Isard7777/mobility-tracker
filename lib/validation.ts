@@ -23,3 +23,21 @@ export const createEntrySchema = z
     });
 
 export type CreateEntryInput = z.infer<typeof createEntrySchema>;
+
+export const updateEntrySchema = z
+    .object({
+        mode: z.enum(MODE_IDS),
+        oneWayKm: z.number().positive().finite(),
+        carpoolOccupants: z.number().int().min(2).max(8).optional(),
+    })
+    .superRefine((entry, context) => {
+        if (entry.mode === "carpool" && entry.carpoolOccupants === undefined) {
+            context.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: "Carpool occupants are required for carpool entries",
+                path: ["carpoolOccupants"],
+            });
+        }
+    });
+
+export type UpdateEntryInput = z.infer<typeof updateEntrySchema>;

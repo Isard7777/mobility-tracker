@@ -38,7 +38,9 @@ export function RecentFeed({ entries }: RecentFeedProps) {
                                 <p className="truncate text-lg font-semibold text-white">{entry.personName}</p>
                                 <p className="text-sm text-emerald-100/70">{entry.km.toFixed(1)} km round trip</p>
                             </div>
-                            <p className="text-lg font-semibold text-lime-200">{entry.co2SavedKg.toFixed(1)} kg of CO2 saved</p>
+                            <p className="text-lg font-semibold text-lime-200">
+                                {entry.co2SavedKg.toFixed(1)} kg of CO2 saved
+                            </p>
                         </motion.div>
                     ))}
                 </AnimatePresence>

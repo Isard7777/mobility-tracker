@@ -1,11 +1,20 @@
 "use client";
 
 import { Check, Leaf } from "lucide-react";
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useRef, useState } from "react";
 import { MODES, type ModeId } from "@/config/modes";
 import type { Participant } from "@/config/participants";
+import { ENTRY_EDIT_WINDOW_MS } from "@/config/entries";
 
 const LAST_QUADRIGRAM_KEY = "mobility-tracker:last-quadrigram";
+
+type EditableEntry = {
+    id: string;
+    mode: ModeId;
+    oneWayKm: number;
+    carpoolOccupants?: number;
+    createdAt: number;
+};
 
 function getToday(): string {
     const now = new Date();
@@ -27,6 +36,15 @@ export function DesktopEntryForm({ participants }: DesktopEntryFormProps) {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [successMessage, setSuccessMessage] = useState("");
     const [errorMessage, setErrorMessage] = useState("");
+    const [editableEntry, setEditableEntry] = useState<EditableEntry | null>(null);
+    const [editingEntryId, setEditingEntryId] = useState<string | null>(null);
+    const editWindowTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+    useEffect(() => {
+        return () => {
+            if (editWindowTimer.current) clearTimeout(editWindowTimer.current);
+        };
+    }, []);
 
     const selectedParticipant = participants.find(
         (participant) =>
@@ -40,6 +58,36 @@ export function DesktopEntryForm({ participants }: DesktopEntryFormProps) {
         if (quadrigram) setEmployeeInput(quadrigram);
     }
 
+    function scheduleEditableEntry(id: string, createdAtIso: string) {
+        const createdAt = new Date(createdAtIso).getTime();
+        setEditableEntry({
+            id,
+            mode,
+            oneWayKm: distance,
+            carpoolOccupants: mode === "carpool" ? carpoolOccupants : undefined,
+            createdAt,
+        });
+        setEditingEntryId(null);
+        if (editWindowTimer.current) clearTimeout(editWindowTimer.current);
+        const remaining = ENTRY_EDIT_WINDOW_MS - (Date.now() - createdAt);
+        editWindowTimer.current = setTimeout(() => setEditableEntry(null), Math.max(remaining, 0));
+    }
+
+    function handleEditLastEntry() {
+        if (!editableEntry) return;
+        setEditingEntryId(editableEntry.id);
+        setMode(editableEntry.mode);
+        setOneWayKm(String(editableEntry.oneWayKm));
+        if (editableEntry.carpoolOccupants) setCarpoolOccupants(editableEntry.carpoolOccupants);
+        setSuccessMessage("");
+        setErrorMessage("");
+    }
+
+    function handleCancelEdit() {
+        setEditingEntryId(null);
+        setOneWayKm("");
+    }
+
     async function handleSubmit(event: FormEvent<HTMLFormElement>) {
         event.preventDefault();
         setErrorMessage("");
@@ -51,24 +99,37 @@ export function DesktopEntryForm({ participants }: DesktopEntryFormProps) {
 
         setIsSubmitting(true);
         try {
-            const response = await fetch("/api/entries", {
-                method: "POST",
+            const response = await fetch(editingEntryId ? `/api/entries/${editingEntryId}` : "/api/entries", {
+                method: editingEntryId ? "PATCH" : "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
-                    quadrigram: selectedParticipant.quadrigram,
+                    ...(editingEntryId ? {} : { quadrigram: selectedParticipant.quadrigram, entryDate, source: "web" }),
                     mode,
                     oneWayKm: distance,
-                    entryDate,
                     ...(mode === "carpool" ? { carpoolOccupants } : {}),
-                    source: "web",
                 }),
             });
-            if (!response.ok) throw new Error("Entry could not be saved.");
+            if (!response.ok) {
+                if (editingEntryId && response.status === 410) {
+                    setErrorMessage("This entry can no longer be corrected.");
+                    setEditingEntryId(null);
+                    setEditableEntry(null);
+                    setOneWayKm("");
+                    return;
+                }
+                throw new Error("Entry could not be saved.");
+            }
 
-            const entry: { co2SavedKg: number } = await response.json();
+            const entry: { id: string; co2SavedKg: number; createdAt: string } = await response.json();
             localStorage.setItem(LAST_QUADRIGRAM_KEY, selectedParticipant.quadrigram);
+            const wasEditing = editingEntryId !== null;
             setOneWayKm("");
-            setSuccessMessage(`Saved. ${entry.co2SavedKg.toFixed(2)} kg CO2 avoided.`);
+            setSuccessMessage(
+                wasEditing
+                    ? `Updated. ${entry.co2SavedKg.toFixed(2)} kg CO2 avoided.`
+                    : `Saved. ${entry.co2SavedKg.toFixed(2)} kg CO2 avoided.`
+            );
+            scheduleEditableEntry(entry.id, entry.createdAt);
         } catch {
             setErrorMessage("Entry could not be saved. Please try again.");
         } finally {
@@ -186,24 +247,48 @@ export function DesktopEntryForm({ participants }: DesktopEntryFormProps) {
                     </p>
                 )}
 
+                {editingEntryId && <p className="text-sm font-semibold text-amber-700">Correcting your last entry.</p>}
+
                 {errorMessage && <p className="text-sm font-semibold text-red-700">{errorMessage}</p>}
                 {successMessage && (
-                    <p className="flex items-center gap-2 text-sm font-semibold text-emerald-700">
-                        <Check
-                            size={18}
-                            aria-hidden="true"
-                        />
-                        {successMessage}
-                    </p>
+                    <div className="flex flex-wrap items-center gap-3">
+                        <p className="flex items-center gap-2 text-sm font-semibold text-emerald-700">
+                            <Check
+                                size={18}
+                                aria-hidden="true"
+                            />
+                            {successMessage}
+                        </p>
+                        {editableEntry && !editingEntryId && (
+                            <button
+                                type="button"
+                                onClick={handleEditLastEntry}
+                                className="text-sm font-semibold text-emerald-700 underline underline-offset-2 hover:text-emerald-900"
+                            >
+                                Made a mistake? Correct it
+                            </button>
+                        )}
+                    </div>
                 )}
 
-                <button
-                    type="submit"
-                    disabled={isSubmitting}
-                    className="bg-emerald-700 px-6 py-4 text-lg font-bold text-white transition hover:bg-emerald-800 disabled:cursor-not-allowed disabled:bg-emerald-200"
-                >
-                    {isSubmitting ? "Saving..." : "Save journey"}
-                </button>
+                <div className="flex items-center gap-4">
+                    <button
+                        type="submit"
+                        disabled={isSubmitting}
+                        className="bg-emerald-700 px-6 py-4 text-lg font-bold text-white transition hover:bg-emerald-800 disabled:cursor-not-allowed disabled:bg-emerald-200"
+                    >
+                        {isSubmitting ? "Saving..." : editingEntryId ? "Save correction" : "Save journey"}
+                    </button>
+                    {editingEntryId && (
+                        <button
+                            type="button"
+                            onClick={handleCancelEdit}
+                            className="text-sm font-semibold text-emerald-800 underline underline-offset-2 hover:text-emerald-950"
+                        >
+                            Cancel
+                        </button>
+                    )}
+                </div>
             </form>
         </section>
     );
