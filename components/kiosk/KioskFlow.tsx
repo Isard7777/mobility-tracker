@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { Participant } from "@/config/participants";
 import type { ModeId } from "@/config/modes";
 import { ParticipantSearch } from "@/components/kiosk/ParticipantSearch";
@@ -53,10 +53,10 @@ export function KioskFlow({ initialTotals, participants, showIndividualWeeklyCo2
         editWindowTimer.current = setTimeout(() => setIsEditWindowOpen(false), Math.max(remaining, 0));
     }
 
-    function closeEditWindow() {
+    const closeEditWindow = useCallback(() => {
         setIsEditWindowOpen(false);
         if (editWindowTimer.current) clearTimeout(editWindowTimer.current);
-    }
+    }, []);
 
     useEffect(() => {
         return () => {
@@ -75,7 +75,7 @@ export function KioskFlow({ initialTotals, participants, showIndividualWeeklyCo2
         }
     }
 
-    function resetFlow() {
+    const resetFlow = useCallback(() => {
         setStep("name");
         setSelectedParticipant(null);
         setSelectedMode(null);
@@ -85,7 +85,7 @@ export function KioskFlow({ initialTotals, participants, showIndividualWeeklyCo2
         setEditingEntryId(null);
         closeEditWindow();
         setEditError("");
-    }
+    }, [closeEditWindow]);
 
     // Resets the form after 30s of inactivity mid-entry (not on the idle name search screen).
     useEffect(() => {
@@ -96,13 +96,13 @@ export function KioskFlow({ initialTotals, participants, showIndividualWeeklyCo2
         return () => {
             if (inactivityTimer.current) clearTimeout(inactivityTimer.current);
         };
-    }, [step, selectedParticipant, selectedMode, kmInput]);
+    }, [step, selectedParticipant, selectedMode, kmInput, resetFlow]);
 
     useEffect(() => {
         if (step !== "confirm") return;
         const timer = setTimeout(resetFlow, CONFIRMATION_DISPLAY_MS);
         return () => clearTimeout(timer);
-    }, [step]);
+    }, [step, resetFlow]);
 
     useEffect(() => {
         const streamUrl = showIndividualWeeklyCo2 ? "/api/stream?includeIndividualWeeklyCo2=true" : "/api/stream";

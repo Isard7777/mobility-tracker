@@ -9,6 +9,7 @@ import { RecentFeed } from "@/components/display/RecentFeed";
 import { TREE_GROWTH } from "@/config/display";
 import type { ModeId } from "@/config/modes";
 import { estimateCo2SavedKg } from "@/lib/co2";
+import { RECENT_ENTRIES_LIMIT } from "@/lib/recent-entries";
 import type { StreamEntry } from "@/lib/sse";
 import type { Totals } from "@/lib/totals";
 
@@ -48,7 +49,7 @@ export function DisplayDashboard({ initialTotals, initialEntries, demo }: Displa
             const interval = setInterval(() => {
                 const entry = demoEntry(sequence++);
                 setLastEntry(entry);
-                setRecentEntries((entries) => [entry, ...entries].slice(0, 5));
+                setRecentEntries((entries) => [entry, ...entries].slice(0, RECENT_ENTRIES_LIMIT));
                 setTotals((current) => ({
                     ...current,
                     totalKm: current.totalKm + entry.km,
@@ -66,7 +67,10 @@ export function DisplayDashboard({ initialTotals, initialEntries, demo }: Displa
                 if (payload.entry) {
                     setLastEntry(payload.entry);
                     setRecentEntries((entries) =>
-                        [payload.entry!, ...entries.filter((item) => item.id !== payload.entry!.id)].slice(0, 5)
+                        [payload.entry!, ...entries.filter((item) => item.id !== payload.entry!.id)].slice(
+                            0,
+                            RECENT_ENTRIES_LIMIT
+                        )
                     );
                 }
             } catch {
