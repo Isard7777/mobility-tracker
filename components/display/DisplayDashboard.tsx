@@ -56,7 +56,7 @@ export function DisplayDashboard({ initialTotals, initialEntries, demo }: Displa
                     totalCo2SavedKg: Number((current.totalCo2SavedKg + entry.co2SavedKg).toFixed(3)),
                     participantsCount: current.participantsCount + (sequence === 1 ? 1 : 0),
                 }));
-            }, 3_000);
+            }, 1_200);
             return () => clearInterval(interval);
         }
 

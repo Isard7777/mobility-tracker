@@ -19,7 +19,10 @@ function modeEmoji(mode: StreamEntry["mode"]): string {
 export function RecentFeed({ entries }: RecentFeedProps) {
     const listRef = useRef<HTMLDivElement>(null);
     const firstRowRef = useRef<HTMLDivElement>(null);
-    const [visibleCount, setVisibleCount] = useState(entries.length);
+    // Start unclipped so the first entry actually renders and can be measured;
+    // if we started at entries.length (0 when the feed is empty), no row would
+    // ever mount and visibleCount could never be recomputed.
+    const [visibleCount, setVisibleCount] = useState(Number.POSITIVE_INFINITY);
 
     useLayoutEffect(() => {
         const listEl = listRef.current;
