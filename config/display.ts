@@ -7,7 +7,7 @@ export function parseTreeGrowthMaxKm(value: string | undefined): number {
 
 export const TREE_GROWTH = {
     maxKm: parseTreeGrowthMaxKm(process.env.NEXT_PUBLIC_TREE_GROWTH_MAX_KM),
-    steps: 20,
+    steps: 100,
 };
 
 export function getTreeGrowthStep(totalKm: number): number {

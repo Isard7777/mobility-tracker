@@ -1,56 +1,69 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { getTreeGrowthProgress, getTreeGrowthStep } from "@/config/display";
+import { getTreeGrowthProgress, getTreeGrowthStep, TREE_GROWTH } from "@/config/display";
 
 type GrowingTreeProps = {
     totalKm: number;
     pulseKey: string;
 };
 
+// Visual thresholds below are fractions of the total growth (0 to 1) rather than
+// absolute step numbers, so the animation stays proportionally identical however
+// many discrete steps TREE_GROWTH.steps is configured to (more steps just means
+// each threshold is reached in finer, smoother increments).
+function stepThreshold(fraction: number): number {
+    return Math.max(1, Math.round(fraction * TREE_GROWTH.steps));
+}
+
 const CANOPY_LAYERS = [
     {
-        startStep: 4,
+        startFraction: 0.05,
         d: "M112 395 C102 338 144 292 207 302 C226 250 310 244 343 299 C408 280 450 326 430 382 C455 424 416 470 362 461 C326 500 248 494 217 461 C154 476 99 448 112 395 Z",
         fill: "url(#canopy-low)",
     },
     {
-        startStep: 8,
+        startFraction: 0.25,
         d: "M79 313 C67 250 127 211 189 230 C204 172 284 151 329 203 C391 171 452 218 434 278 C467 321 428 370 374 363 C332 410 244 403 215 364 C151 391 87 367 79 313 Z",
         fill: "url(#canopy-mid)",
     },
     {
-        startStep: 12,
+        startFraction: 0.45,
         d: "M121 218 C113 153 176 119 230 142 C253 80 342 80 367 144 C425 128 464 177 438 228 C455 275 413 304 367 289 C326 337 245 326 219 287 C165 307 118 271 121 218 Z",
         fill: "url(#canopy-high)",
     },
     {
-        startStep: 16,
+        startFraction: 0.65,
         d: "M169 139 C167 81 226 43 273 75 C316 25 394 59 392 117 C448 136 448 196 399 216 C367 264 286 253 260 215 C204 233 161 194 169 139 Z",
         fill: "url(#canopy-crown)",
     },
 ] as const;
 
+// Each canopy layer fades in over this fraction of the total growth.
+const CANOPY_LAYER_SPAN_FRACTION = 0.25;
+
 const LEAF_ACCENTS = [
-    { step: 6, x: 225, y: 421, rotate: -34, fill: "#bef264" },
-    { step: 7, x: 303, y: 403, rotate: 24, fill: "#a3e635" },
-    { step: 8, x: 130, y: 362, rotate: -48, fill: "#d9f99d" },
-    { step: 9, x: 374, y: 351, rotate: 42, fill: "#bef264" },
-    { step: 10, x: 239, y: 336, rotate: 0, fill: "#d9f99d" },
-    { step: 11, x: 170, y: 274, rotate: -28, fill: "#bef264" },
-    { step: 12, x: 336, y: 275, rotate: 33, fill: "#d9f99d" },
-    { step: 13, x: 424, y: 290, rotate: 56, fill: "#a3e635" },
-    { step: 14, x: 207, y: 199, rotate: -26, fill: "#d9f99d" },
-    { step: 15, x: 362, y: 206, rotate: 34, fill: "#bef264" },
-    { step: 16, x: 286, y: 151, rotate: 5, fill: "#d9f99d" },
-    { step: 17, x: 227, y: 104, rotate: -22, fill: "#bef264" },
-    { step: 18, x: 333, y: 110, rotate: 28, fill: "#d9f99d" },
-    { step: 19, x: 394, y: 158, rotate: 43, fill: "#a3e635" },
-    { step: 20, x: 163, y: 171, rotate: -45, fill: "#d9f99d" },
+    { fraction: 0.1, x: 225, y: 421, rotate: -34, fill: "#bef264" },
+    { fraction: 0.15, x: 303, y: 403, rotate: 24, fill: "#a3e635" },
+    { fraction: 0.2, x: 130, y: 362, rotate: -48, fill: "#d9f99d" },
+    { fraction: 0.25, x: 374, y: 351, rotate: 42, fill: "#bef264" },
+    { fraction: 0.3, x: 239, y: 336, rotate: 0, fill: "#d9f99d" },
+    { fraction: 0.35, x: 170, y: 274, rotate: -28, fill: "#bef264" },
+    { fraction: 0.4, x: 336, y: 275, rotate: 33, fill: "#d9f99d" },
+    { fraction: 0.45, x: 424, y: 290, rotate: 56, fill: "#a3e635" },
+    { fraction: 0.5, x: 207, y: 199, rotate: -26, fill: "#d9f99d" },
+    { fraction: 0.55, x: 362, y: 206, rotate: 34, fill: "#bef264" },
+    { fraction: 0.6, x: 286, y: 151, rotate: 5, fill: "#d9f99d" },
+    { fraction: 0.65, x: 227, y: 104, rotate: -22, fill: "#bef264" },
+    { fraction: 0.7, x: 333, y: 110, rotate: 28, fill: "#d9f99d" },
+    { fraction: 0.75, x: 394, y: 158, rotate: 43, fill: "#a3e635" },
+    { fraction: 0.8, x: 163, y: 171, rotate: -45, fill: "#d9f99d" },
 ] as const;
 
-function layerProgress(growthStep: number, startStep: number): number {
-    return Math.min(1, Math.max(0, (growthStep - startStep + 1) / 5));
+function layerProgress(growthStep: number, startFraction: number): number {
+    const startStep = stepThreshold(startFraction);
+    const spanSteps = stepThreshold(CANOPY_LAYER_SPAN_FRACTION);
+    return Math.min(1, Math.max(0, (growthStep - startStep + 1) / spanSteps));
 }
 
 export function GrowingTree({ totalKm, pulseKey }: GrowingTreeProps) {
@@ -65,7 +78,7 @@ export function GrowingTree({ totalKm, pulseKey }: GrowingTreeProps) {
             viewBox="0 0 520 660"
             role="img"
             aria-label="A tree growing with collective travel distance"
-            className="h-full max-h-[72vh] w-full overflow-visible"
+            className="h-full max-h-[56vh] w-full overflow-visible"
             animate={{ scaleX: [1.35, 1.37, 1.35], scaleY: [1, 1.015, 1] }}
             transition={{ duration: 0.8, ease: "easeOut" }}
         >
@@ -177,10 +190,10 @@ export function GrowingTree({ totalKm, pulseKey }: GrowingTreeProps) {
                 />
             </motion.g>
             {CANOPY_LAYERS.map((layer) => {
-                const progress = layerProgress(growthStep, layer.startStep);
+                const progress = layerProgress(growthStep, layer.startFraction);
                 return (
                     <motion.path
-                        key={layer.startStep}
+                        key={layer.startFraction}
                         d={layer.d}
                         fill={layer.fill}
                         initial={false}
@@ -190,21 +203,24 @@ export function GrowingTree({ totalKm, pulseKey }: GrowingTreeProps) {
                     />
                 );
             })}
-            {LEAF_ACCENTS.map((leaf) => (
-                <g
-                    key={leaf.step}
-                    transform={`translate(${leaf.x} ${leaf.y}) rotate(${leaf.rotate})`}
-                >
-                    <motion.path
-                        d="M0 0 C-18 -12 -18 -39 0 -54 C18 -39 18 -12 0 0 Z"
-                        fill={leaf.fill}
-                        initial={false}
-                        animate={{ scale: growthStep >= leaf.step ? 1 : 0, opacity: growthStep >= leaf.step ? 1 : 0 }}
-                        transition={{ duration: 0.4, ease: "easeOut" }}
-                        style={{ originX: "50%", originY: "100%" }}
-                    />
-                </g>
-            ))}
+            {LEAF_ACCENTS.map((leaf) => {
+                const isVisible = growthStep >= stepThreshold(leaf.fraction);
+                return (
+                    <g
+                        key={leaf.fraction}
+                        transform={`translate(${leaf.x} ${leaf.y}) rotate(${leaf.rotate})`}
+                    >
+                        <motion.path
+                            d="M0 0 C-18 -12 -18 -39 0 -54 C18 -39 18 -12 0 0 Z"
+                            fill={leaf.fill}
+                            initial={false}
+                            animate={{ scale: isVisible ? 1 : 0, opacity: isVisible ? 1 : 0 }}
+                            transition={{ duration: 0.4, ease: "easeOut" }}
+                            style={{ originX: "50%", originY: "100%" }}
+                        />
+                    </g>
+                );
+            })}
         </motion.svg>
     );
 }

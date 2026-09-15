@@ -53,7 +53,7 @@ Copy `.env.example` to `.env` and set the production values before deployment.
 | `APP_PORT`                       | HTTP port exposed by the app container.                                                        |
 | `ADMIN_PASSWORD`                 | Required for `/admin` participant management, exports, and journey reset; use only over HTTPS. |
 | `SHOW_INDIVIDUAL_WEEKLY_CO2`     | Defaults to `false`; enable only after a GDPR review.                                          |
-| `NEXT_PUBLIC_TREE_GROWTH_MAX_KM` | Kilometres for the 20 visual tree growth stages. Rebuild the app image after changing it.      |
+| `NEXT_PUBLIC_TREE_GROWTH_MAX_KM` | Kilometres for the 100 visual tree growth stages. Rebuild the app image after changing it.     |
 | `DATABASE_URL`                   | Used by local Prisma commands. The Compose app uses its internal `postgres` hostname instead.  |
 
 ## Internal server deployment

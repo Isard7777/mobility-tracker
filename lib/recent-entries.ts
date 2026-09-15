@@ -2,7 +2,9 @@ import type { ModeId } from "@/config/modes";
 import { prisma } from "./db";
 import type { StreamEntry } from "./sse";
 
-const RECENT_ENTRIES_LIMIT = 5;
+// Upper bound on how many journeys we keep around client-side; the display
+// then renders as many of them as actually fit the available height.
+export const RECENT_ENTRIES_LIMIT = 20;
 
 export async function getRecentEntries(limit = RECENT_ENTRIES_LIMIT): Promise<StreamEntry[]> {
     const entries = await prisma.entry.findMany({

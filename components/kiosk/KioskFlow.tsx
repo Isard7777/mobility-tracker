@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { Participant } from "@/config/participants";
 import type { ModeId } from "@/config/modes";
 import { ParticipantSearch } from "@/components/kiosk/ParticipantSearch";
@@ -9,6 +9,7 @@ import { NumericKeypad } from "@/components/kiosk/NumericKeypad";
 import { ConfirmationScreen } from "@/components/kiosk/ConfirmationScreen";
 import { ContextBanner } from "@/components/kiosk/ContextBanner";
 import type { Totals } from "@/lib/totals";
+import { ENTRY_EDIT_WINDOW_MS } from "@/config/entries";
 
 type Step = "name" | "mode" | "km" | "confirm";
 
@@ -19,7 +20,7 @@ type KioskFlowProps = {
 };
 
 const INACTIVITY_RESET_MS = 30_000;
-const CONFIRMATION_DISPLAY_MS = 3_000;
+const CONFIRMATION_DISPLAY_MS = 6_000;
 
 function getToday(): string {
     const now = new Date();
@@ -36,10 +37,32 @@ export function KioskFlow({ initialTotals, participants, showIndividualWeeklyCo2
     const [entryDate, setEntryDate] = useState(getToday);
     const [carpoolOccupants, setCarpoolOccupants] = useState(2);
     const [lastEntryCo2, setLastEntryCo2] = useState(0);
+    const [editingEntryId, setEditingEntryId] = useState<string | null>(null);
+    const [isEditWindowOpen, setIsEditWindowOpen] = useState(false);
+    const [editError, setEditError] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [totals, setTotals] = useState<Totals>(initialTotals);
 
     const inactivityTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const editWindowTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+    function armEditWindow(createdAtIso: string) {
+        setIsEditWindowOpen(true);
+        if (editWindowTimer.current) clearTimeout(editWindowTimer.current);
+        const remaining = ENTRY_EDIT_WINDOW_MS - (Date.now() - new Date(createdAtIso).getTime());
+        editWindowTimer.current = setTimeout(() => setIsEditWindowOpen(false), Math.max(remaining, 0));
+    }
+
+    const closeEditWindow = useCallback(() => {
+        setIsEditWindowOpen(false);
+        if (editWindowTimer.current) clearTimeout(editWindowTimer.current);
+    }, []);
+
+    useEffect(() => {
+        return () => {
+            if (editWindowTimer.current) clearTimeout(editWindowTimer.current);
+        };
+    }, []);
 
     async function refreshTotals() {
         try {
@@ -52,14 +75,17 @@ export function KioskFlow({ initialTotals, participants, showIndividualWeeklyCo2
         }
     }
 
-    function resetFlow() {
+    const resetFlow = useCallback(() => {
         setStep("name");
         setSelectedParticipant(null);
         setSelectedMode(null);
         setKmInput("");
         setEntryDate(getToday());
         setCarpoolOccupants(2);
-    }
+        setEditingEntryId(null);
+        closeEditWindow();
+        setEditError("");
+    }, [closeEditWindow]);
 
     // Resets the form after 30s of inactivity mid-entry (not on the idle name search screen).
     useEffect(() => {
@@ -70,13 +96,13 @@ export function KioskFlow({ initialTotals, participants, showIndividualWeeklyCo2
         return () => {
             if (inactivityTimer.current) clearTimeout(inactivityTimer.current);
         };
-    }, [step, selectedParticipant, selectedMode, kmInput]);
+    }, [step, selectedParticipant, selectedMode, kmInput, resetFlow]);
 
     useEffect(() => {
         if (step !== "confirm") return;
         const timer = setTimeout(resetFlow, CONFIRMATION_DISPLAY_MS);
         return () => clearTimeout(timer);
-    }, [step]);
+    }, [step, resetFlow]);
 
     useEffect(() => {
         const streamUrl = showIndividualWeeklyCo2 ? "/api/stream?includeIndividualWeeklyCo2=true" : "/api/stream";
@@ -108,6 +134,8 @@ export function KioskFlow({ initialTotals, participants, showIndividualWeeklyCo2
     function handleBack() {
         if (step === "mode") {
             setSelectedParticipant(null);
+            setEditingEntryId(null);
+            closeEditWindow();
             setStep("name");
             return;
         }
@@ -118,28 +146,51 @@ export function KioskFlow({ initialTotals, participants, showIndividualWeeklyCo2
         }
     }
 
+    function handleEditLastEntry() {
+        setEditError("");
+        setStep("km");
+    }
+
     async function handleValidate() {
         if (!selectedParticipant || !selectedMode || isSubmitting) return;
         const km = Number(kmInput.replace(",", "."));
         if (!(km > 0 && Number.isFinite(km))) return;
 
+        const isEditAttempt = editingEntryId !== null;
+
+        if (isEditAttempt && !isEditWindowOpen) {
+            setEditError("This entry can no longer be corrected.");
+            setEditingEntryId(null);
+            return;
+        }
+
         setIsSubmitting(true);
+        setEditError("");
         try {
-            const res = await fetch("/api/entries", {
-                method: "POST",
+            const res = await fetch(isEditAttempt ? `/api/entries/${editingEntryId}` : "/api/entries", {
+                method: isEditAttempt ? "PATCH" : "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
-                    quadrigram: selectedParticipant.quadrigram,
+                    ...(isEditAttempt
+                        ? {}
+                        : { quadrigram: selectedParticipant.quadrigram, entryDate, source: "kiosk" }),
                     mode: selectedMode,
                     oneWayKm: km,
-                    entryDate,
                     ...(selectedMode === "carpool" ? { carpoolOccupants } : {}),
-                    source: "kiosk",
                 }),
             });
-            if (!res.ok) return;
+            if (!res.ok) {
+                if (isEditAttempt) {
+                    setEditError("This entry can no longer be corrected.");
+                    setEditingEntryId(null);
+                    closeEditWindow();
+                }
+                return;
+            }
 
-            const entry: { co2SavedKg: number } = await res.json();
+            const entry: { id: string; co2SavedKg: number; createdAt: string } = await res.json();
+            setEditingEntryId(entry.id);
+            armEditWindow(entry.createdAt);
             setLastEntryCo2(entry.co2SavedKg);
             await refreshTotals();
             setStep("confirm");
@@ -191,6 +242,8 @@ export function KioskFlow({ initialTotals, participants, showIndividualWeeklyCo2
                         onCarpoolOccupantsChange={setCarpoolOccupants}
                         onBack={handleBack}
                         onCancel={resetFlow}
+                        isCorrection={isEditWindowOpen}
+                        errorMessage={editError}
                     />
                 )}
                 {step === "confirm" && selectedParticipant && (
@@ -198,6 +251,7 @@ export function KioskFlow({ initialTotals, participants, showIndividualWeeklyCo2
                         name={selectedParticipant.displayName.split(" ")[0]}
                         co2SavedKg={lastEntryCo2}
                         onDismiss={resetFlow}
+                        onEdit={isEditWindowOpen ? handleEditLastEntry : undefined}
                     />
                 )}
             </div>
